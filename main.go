@@ -47,10 +47,13 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 	requestType := strings.ToUpper(buffParts[0])
 
 	if requestType == "CHAVE_PUBLICA" {
+		fmt.Println(requestType[1])
+		fmt.Println(len(buffParts[1]))
 		aesKey, err := encryption.ReadPublicKey(buffParts[1])
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("len aes key", len(aesKey))
 		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKey+"\n")
 	}
 
