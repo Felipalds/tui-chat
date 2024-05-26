@@ -49,6 +49,15 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
 
+		if parts[0] == "/list" {
+			text := "LISTAR_SALAS"
+			encrypted, _ := encryption.Encrypt(text, aesKey)
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -71,7 +80,9 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 		}
 		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
 	} else {
-		fmt.Println(requestType)
+		for _, p := range buffParts {
+			fmt.Println(p)
+		}
 	}
 
 }
