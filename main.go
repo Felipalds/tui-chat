@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/rsa"
 	"fmt"
 	"github.com/Felipalds/tui-chat.git/encryption"
 	"net"
@@ -10,6 +11,8 @@ import (
 )
 
 var conn net.Conn
+var aesKey []byte
+var pk *rsa.PublicKey
 
 func main() {
 
@@ -27,11 +30,30 @@ func main() {
 	// TODO: study the bufio lib
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
-		text := strings.TrimSpace(scanner.Text())
-		if text == "" {
-			continue
+		parts := strings.Split(scanner.Text(), " ")
+		if parts[0] == "/autenticacao" {
+			text := "AUTENTICACAO " + parts[1] + "\n"
+			fmt.Fprintf(conn, "%s\n", text)
 		}
-		fmt.Fprintf(conn, "%s\n", text)
+		if parts[0] == "/registro" {
+			text := "REGISTRO " + parts[1] + "\n"
+			fmt.Fprintf(conn, "%s\n", text)
+		}
+		if parts[0] == "/criar-sala" {
+			text := "CRIAR_SALA " + parts[1] + " " + parts[2] + " " + parts[3]
+			fmt.Println(text)
+			fmt.Println(aesKey)
+			encrypted, _ := encryption.Encrypt(text, aesKey)
+			fmt.Println("Encrypted: ", encrypted)
+			decrypted, _ := encryption.Decrypt(encrypted, aesKey)
+			fmt.Println("Decripted: ", decrypted)
+
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -49,12 +71,12 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 	if requestType == "CHAVE_PUBLICA" {
 		fmt.Println(requestType[1])
 		fmt.Println(len(buffParts[1]))
-		aesKey, err := encryption.ReadPublicKey(buffParts[1])
+		aesKeyE, aesBytes, err := encryption.ReadPublicKey(buffParts[1])
+		aesKey = aesBytes
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("len aes key", len(aesKey))
-		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKey+"\n")
+		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
 	}
 
 }
