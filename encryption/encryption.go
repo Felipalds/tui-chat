@@ -29,8 +29,6 @@ func GetPublicKey(publicString string) (*rsa.PublicKey, error) {
 		return nil, fmt.Errorf("chave pública não é do tipo RSA")
 	}
 
-	fmt.Println("Chave pública decrypted:", rsaPubKey)
-
 	return rsaPubKey, nil
 }
 
@@ -40,7 +38,6 @@ func GenerateAESKey() ([]byte, error) {
 		panic(err.Error())
 	}
 
-	fmt.Println("Random AES key: \n", key)
 	return key, nil
 }
 
@@ -65,7 +62,6 @@ func ReadPublicKey(publicString string) (string, []byte, error) {
 		return "", nil, err
 	}
 
-	fmt.Println(encryptedAESKey)
 	base64Key := base64.StdEncoding.EncodeToString(encryptedAESKey)
 	return base64Key, AesKey, nil
 

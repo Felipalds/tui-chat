@@ -34,8 +34,6 @@ func Encrypt(plainText string, keyBytes []byte) (string, error) {
 
 // Decrypt decrypts cipher text string into plain text string
 func Decrypt(cipherText string, keyBytes []byte) (string, error) {
-	fmt.Println("Cipher! ", cipherText)
-	fmt.Println("Key Bytes! ", keyBytes)
 	cipherTextBytes, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
 		return "", err

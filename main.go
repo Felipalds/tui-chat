@@ -41,12 +41,7 @@ func main() {
 		}
 		if parts[0] == "/criar-sala" {
 			text := "CRIAR_SALA " + parts[1] + " " + parts[2] + " " + parts[3]
-			fmt.Println(text)
-			fmt.Println(aesKey)
 			encrypted, _ := encryption.Encrypt(text, aesKey)
-			fmt.Println("Encrypted: ", encrypted)
-			decrypted, _ := encryption.Decrypt(encrypted, aesKey)
-			fmt.Println("Decripted: ", decrypted)
 
 			if text == "" {
 				continue
@@ -69,14 +64,14 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 	requestType := strings.ToUpper(buffParts[0])
 
 	if requestType == "CHAVE_PUBLICA" {
-		fmt.Println(requestType[1])
-		fmt.Println(len(buffParts[1]))
 		aesKeyE, aesBytes, err := encryption.ReadPublicKey(buffParts[1])
 		aesKey = aesBytes
 		if err != nil {
 			panic(err)
 		}
 		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
+	} else {
+		fmt.Println(requestType)
 	}
 
 }
