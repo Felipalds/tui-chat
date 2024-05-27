@@ -31,16 +31,19 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
-		if parts[0] == "/autenticacao" {
+		if parts[0] == "/login" {
 			text := "AUTENTICACAO " + parts[1] + "\n"
 			fmt.Fprintf(conn, "%s\n", text)
 		}
-		if parts[0] == "/registro" {
+		if parts[0] == "/signup" {
 			text := "REGISTRO " + parts[1] + "\n"
 			fmt.Fprintf(conn, "%s\n", text)
 		}
-		if parts[0] == "/criar-sala" {
-			text := "CRIAR_SALA " + parts[1] + " " + parts[2] + " " + parts[3]
+		if parts[0] == "/create" {
+			text := "CRIAR_SALA " + parts[1] + " " + parts[2]
+			if len(parts) == 4 {
+				text += " " + parts[3]
+			}
 			encrypted, _ := encryption.Encrypt(text, aesKey)
 
 			if text == "" {
@@ -49,8 +52,32 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
 
+		if parts[0] == "/msg" {
+			text := "ENVIAR_MENSAGEM " + parts[1]
+			for _, p := range parts {
+				text += " " + p
+			}
+			encrypted, _ := encryption.Encrypt(text, aesKey)
+
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
 		if parts[0] == "/list" {
 			text := "LISTAR_SALAS"
+			encrypted, _ := encryption.Encrypt(text, aesKey)
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
+		if parts[0] == "/join" {
+			text := "ENTRAR_SALA " + parts[1]
+			if len(parts) == 3 {
+				text += " " + parts[2]
+			}
 			encrypted, _ := encryption.Encrypt(text, aesKey)
 			if text == "" {
 				continue
