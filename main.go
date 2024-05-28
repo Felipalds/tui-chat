@@ -19,7 +19,12 @@ func main() {
 
 	var err error
 	auth = false
-	conn, err = net.Dial("tcp", "localhost:8080")
+
+	fmt.Println(os.Args)
+	address := os.Args[1]
+	port := os.Args[2]
+
+	conn, err = net.Dial("tcp", address+":"+port)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +40,6 @@ func main() {
 		parts := strings.Split(scanner.Text(), " ")
 		if parts[0] == "/login" {
 			text := "AUTENTICACAO " + parts[1]
-			fmt.Println(text)
 			fmt.Fprintf(conn, "%s\n", text)
 		}
 		if parts[0] == "/signup" {
@@ -57,8 +61,10 @@ func main() {
 
 		if parts[0] == "/msg" {
 			text := "ENVIAR_MENSAGEM " + parts[1]
-			for _, p := range parts {
-				text += " " + p
+			for i, p := range parts {
+				if i > 1 {
+					text += " " + p
+				}
 			}
 			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 
@@ -89,6 +95,15 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
 
+		if parts[0] == "/ban" {
+			text := "BANIR_USUARIO " + parts[1] + " " + parts[2]
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -98,6 +113,9 @@ func main() {
 
 func treatMessageFromServer(msg string, conn net.Conn) {
 	msg = strings.ReplaceAll(msg, "\n", "")
+	if len(msg) <= 2 {
+		return
+	}
 	var err error
 
 	if auth {
