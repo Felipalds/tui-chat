@@ -47,7 +47,7 @@ func main() {
 			if len(parts) == 4 {
 				text += " " + parts[3]
 			}
-			encrypted, _ := encryption.Encrypt(text, aesKey)
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 
 			if text == "" {
 				continue
@@ -60,16 +60,17 @@ func main() {
 			for _, p := range parts {
 				text += " " + p
 			}
-			encrypted, _ := encryption.Encrypt(text, aesKey)
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 
 			if text == "" {
 				continue
 			}
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
+
 		if parts[0] == "/list" {
 			text := "LISTAR_SALAS"
-			encrypted, _ := encryption.Encrypt(text, aesKey)
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 			if text == "" {
 				continue
 			}
@@ -81,7 +82,7 @@ func main() {
 			if len(parts) == 3 {
 				text += " " + parts[2]
 			}
-			encrypted, _ := encryption.Encrypt(text, aesKey)
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 			if text == "" {
 				continue
 			}
@@ -131,6 +132,7 @@ func getMessagesFromServer(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 	for {
 		msg, err := reader.ReadString('\n')
+		fmt.Println("Receiving a message from server: ", msg)
 
 		treatMessageFromServer(msg, conn)
 
