@@ -122,10 +122,10 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
 
-		if parts[0] == "/exit" {
-			fmt.Println("Exiting...")
-			os.Exit(0)
-		}
+		//if parts[0] == "/exit" {
+		//	fmt.Println("Exiting...")
+		//	os.Exit(0)
+		//}
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -164,6 +164,7 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 		for _, p := range buffParts {
 			fmt.Print(p, " ")
 		}
+		fmt.Print("\n=====================\n")
 	}
 
 }
@@ -172,7 +173,6 @@ func getMessagesFromServer(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 	for {
 		msg, err := reader.ReadString('\n')
-		fmt.Println("Receiving a message from server: ", msg)
 
 		treatMessageFromServer(msg, conn)
 
