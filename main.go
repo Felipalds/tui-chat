@@ -13,10 +13,12 @@ import (
 var conn net.Conn
 var aesKey []byte
 var pk *rsa.PublicKey
+var auth bool
 
 func main() {
 
 	var err error
+	auth = false
 	conn, err = net.Dial("tcp", "localhost:8080")
 	if err != nil {
 		panic(err)
@@ -32,11 +34,12 @@ func main() {
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
 		if parts[0] == "/login" {
-			text := "AUTENTICACAO " + parts[1] + "\n"
+			text := "AUTENTICACAO " + parts[1]
+			fmt.Println(text)
 			fmt.Fprintf(conn, "%s\n", text)
 		}
 		if parts[0] == "/signup" {
-			text := "REGISTRO " + parts[1] + "\n"
+			text := "REGISTRO " + parts[1]
 			fmt.Fprintf(conn, "%s\n", text)
 		}
 		if parts[0] == "/create" {
@@ -93,6 +96,15 @@ func main() {
 }
 
 func treatMessageFromServer(msg string, conn net.Conn) {
+	msg = strings.ReplaceAll(msg, "\n", "")
+	var err error
+
+	if auth {
+		msg, err = encryption.Decrypt(msg, aesKey)
+		if err != nil {
+			fmt.Println("Error decrypting message:", err)
+		}
+	}
 
 	buffParts := strings.Split(msg, " ")
 	buffParts[len(buffParts)-1] = strings.ReplaceAll(buffParts[len(buffParts)-1], "\x00", "")
@@ -106,9 +118,10 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 			panic(err)
 		}
 		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
+		auth = true
 	} else {
 		for _, p := range buffParts {
-			fmt.Println(p)
+			fmt.Print(p, " ")
 		}
 	}
 
