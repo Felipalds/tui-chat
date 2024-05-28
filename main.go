@@ -104,6 +104,28 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", encrypted)
 		}
 
+		if parts[0] == "/leave" {
+			text := "SAIR_SALA " + parts[1]
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
+		if parts[0] == "/close" {
+			text := "FECHAR_SALA " + parts[1]
+			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
+			if text == "" {
+				continue
+			}
+			fmt.Fprintf(conn, "%s\n", encrypted)
+		}
+
+		if parts[0] == "/exit" {
+			fmt.Println("Exiting...")
+			os.Exit(0)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
