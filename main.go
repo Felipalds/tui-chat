@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/Felipalds/tui-chat.git/encryption"
+	"github.com/Felipalds/tui-chat.git/utils"
 	"net"
 	"os"
 	"strings"
@@ -30,7 +31,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	fmt.Println("Welcome to the chat. /help to get the manual")
+	fmt.Println(utils.BgBlueText("Welcome to the chat. /help to get the manual"))
 
 	go getMessagesFromServer(conn)
 
@@ -47,9 +48,12 @@ func main() {
 			fmt.Fprintf(conn, "%s\n", text)
 		}
 		if parts[0] == "/create" {
-			text := "CRIAR_SALA " + parts[1] + " " + parts[2]
-			if len(parts) == 4 {
-				text += " " + parts[3]
+			text := "CRIAR_SALA"
+			if len(parts) == 3 {
+				text += " PRIVADA " + parts[1] + " " + encryption.HashPass(parts[2])
+			}
+			if len(parts) == 2 {
+				text += " PUBLICA " + parts[1]
 			}
 			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 
@@ -86,7 +90,7 @@ func main() {
 		if parts[0] == "/join" {
 			text := "ENTRAR_SALA " + parts[1]
 			if len(parts) == 3 {
-				text += " " + parts[2]
+				text += " " + encryption.HashPass(parts[2])
 			}
 			encrypted, _ := encryption.Encrypt([]byte(text), aesKey)
 			if text == "" {
@@ -152,21 +156,43 @@ func treatMessageFromServer(msg string, conn net.Conn) {
 
 	requestType := strings.ToUpper(buffParts[0])
 
-	if requestType == "CHAVE_PUBLICA" {
-		aesKeyE, aesBytes, err := encryption.ReadPublicKey(buffParts[1])
-		aesKey = aesBytes
-		if err != nil {
-			panic(err)
+	switch requestType {
+	case "CHAVE_PUBLICA":
+		{
+			aesKeyE, aesBytes, err := encryption.ReadPublicKey(buffParts[1])
+			aesKey = aesBytes
+			if err != nil {
+				panic(err)
+			}
+			fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
+			auth = true
 		}
-		fmt.Fprintf(conn, "CHAVE_SIMETRICA "+aesKeyE+"\n")
-		auth = true
-	} else {
-		for _, p := range buffParts {
-			fmt.Print(p, " ")
-		}
-		fmt.Print("\n=====================\n")
-	}
 
+	case "ERRO:":
+		{
+
+			for _, p := range buffParts {
+				fmt.Print(utils.RedText(p), " ")
+			}
+			fmt.Print("\n")
+		}
+
+	case "MENSAGEM":
+		{
+			fmt.Print(utils.BlueText(buffParts[1]), " ")
+			fmt.Print(utils.CyanText(buffParts[2]), " ")
+			for _, p := range buffParts[2:] {
+				fmt.Print(p, " ")
+			}
+			fmt.Print("\n")
+		}
+
+	default:
+		for _, p := range buffParts {
+			fmt.Print(utils.GreenText(p), " ")
+		}
+		fmt.Print("\n")
+	}
 }
 
 func getMessagesFromServer(conn net.Conn) {
